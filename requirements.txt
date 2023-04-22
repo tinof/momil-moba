@@ -39,7 +39,7 @@ pandas==1.5.3
 Pillow @ file:///Users/runner/miniforge3/conda-bld/pillow_1675487373585/work
 platformdirs @ file:///home/conda/feedstock_root/build_artifacts/platformdirs_1677883256757/work
 pooch @ file:///home/conda/feedstock_root/build_artifacts/pooch_1677600624926/work
-protobuf==3.19.4
+protobuf==3.19.5
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser @ file:///home/conda/feedstock_root/build_artifacts/pycparser_1636257122734/work
