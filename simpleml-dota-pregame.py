@@ -4,6 +4,11 @@ import xgboost as xgb
 import requests
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+from tqdm import tqdm
+from rich.console import Console
+from rich.progress import track
+
+console = Console()
 
 # Function to recursively scan a folder for CSV files and return their paths
 def get_csv_paths(folder_path):
@@ -17,6 +22,8 @@ def get_csv_paths(folder_path):
 # Function to read a CSV file and return its column names (features)
 def get_features_from_csv(csv_path):
     df = pd.read_csv(csv_path, usecols=lambda x: x not in ['radiant_win'])
+    dtype_dict = {67: str, 70: str, 124: str}
+    dataset = pd.read_csv(csv_path, dtype=dtype_dict)
     return df.columns.tolist()
 
 
@@ -28,10 +35,11 @@ csv_paths = get_csv_paths(folder_path)
 # Read the CSV files and extract their features
 all_features = []
 datasets = []
-for csv_path in csv_paths:
+for csv_path in track(csv_paths, description="Processing CSV files..."):
     features = get_features_from_csv(csv_path)
     all_features.extend(features)
     datasets.append(pd.read_csv(csv_path))
+
 
 # Remove duplicates from the list of features
 selected_features = list(set(all_features))
@@ -54,7 +62,8 @@ model.fit(X_train, y_train)
 
 y_pred = model.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
-print(f"Model accuracy: {accuracy * 100:.2f}%")
+accuracy_message = f"Model accuracy: {accuracy * 100:.2f}%"
+console.print(accuracy_message, style="bold green")
 
 # (4) Fetch the next 5 Pro games using Opendota API
 API_BASE_URL = "https://api.opendota.com/api"
@@ -68,9 +77,9 @@ else:
     exit(1)
 
 # (5) Let the user choose which game to predict
-print("\nUpcoming Pro matches:")
+console.print("\nUpcoming Pro matches:", style="bold blue")
 for i, match in enumerate(upcoming_pro_matches, start=1):
-    print(f"{i}. Match ID: {match['match_id']}")
+    console.print(f"{i}. Match ID: {match['match_id']}", style="bold yellow"
     
 if len(upcoming_pro_matches) < 5:
     print("There are less than 5 upcoming pro matches available.")
@@ -90,6 +99,7 @@ X_match = pd.DataFrame([selected_match])[selected_features]
 # (6) Print the prediction for that game
 prediction = model.predict(X_match)
 if prediction[0]:
-    print("\nPrediction: Radiant will win.")
+    console.print("\nPrediction: Radiant will win.", style="bold green")
 else:
-    print("\nPrediction: Dire will win.")
+    console.print("\nPrediction: Dire will win.", style="bold red")
+
